@@ -1,0 +1,13 @@
+---
+    mysql_root_password: 'pwFmbn123s#2sapls'
+    new_mysql_user: 'user'
+    new_mysql_password: 'mn#s2ax23d12s'
+    new_mysql_database: 'mysql'
+    buffer_pool_size: '256M'
+    backup_dir: '/backup/mysql/'
+    replication_user: 'replication_user'
+    replication_password: '4kdsfn!32s#2sx'
+    master_server_ip: '192.168.0.2'
+    slave_server_ip: '192.168.0.3'
+    server_id: 2
+    encryption_password: 2hS4Uim21s

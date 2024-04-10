@@ -1,0 +1,97 @@
+---
+- hosts: servers
+  become: yes
+  #Wczytanie vaulta z secretami
+  vars_files:
+  - /vaults/vault-lamp.yml
+  tasks:
+    - name: Aktualizacja i upgrade pakietów
+      apt:
+        update_cache: yes
+        upgrade: safe
+
+    - name: Instalacja firewalla
+      apt:
+        name: ufw
+        state: present
+
+    - name: Instalacja pakietów LAMP
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - apache2
+        - mariadb-server
+        - php
+        - libapache2-mod-php
+        - php-mysql
+
+    - name: Ustawienie reguł dla firewalla
+      ufw:
+        rule: allow
+        name: "{{ item }}"
+      with_items:
+        - Apache
+        - OpenSSH
+
+    - name: Włączenie firewalla
+      ufw:
+        state: enabled
+
+    - name: Usunięcie domyślnej strony Apache
+      file:
+        path: /var/www/html/index.html
+        state: absent
+
+    - name: Kopiowanie nowego pliku index.php
+      copy:
+        src: /tmp/index.php
+        dest: /var/www/html/index.php
+
+    - name: Utworzenie bazy danych
+      mysql_db:
+        name: "{{ db_name }}"
+        state: present
+
+    - name: Utworzenie użytkownika bazy danych
+      mysql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_pass }}"
+        priv: '*.*:ALL'
+        state: present
+
+    - name: Załadowanie danych do bazy
+      mysql_db:
+        state: import
+        name: "{{ db_name }}"
+        target: /tmp/data.sql
+
+    - name: Konfiguracja PHP
+      lineinfile:
+        path: /etc/php/8.3/apache2/php.ini
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      loop:
+        - regexp: '^memory_limit ='
+          line: "memory_limit = {{ memory_limit }}"
+        - regexp: '^upload_max_filesize ='
+          line: "upload_max_filesize = {{ upload_max_filesize }}"
+        - regexp: '^max_execution_time ='
+          line: "max_execution_time = {{ max_execution_time }}"
+      loop_control:
+        loop_var: item
+
+    - name: Uruchomienie i włączenie serwisów przy starcie systemu
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      with_items:
+        - apache2
+        - mariadb
+
+    - name: Testowanie konfiguracji
+      uri:
+        url: http://localhost
+        status_code: 200
+...

@@ -2,10 +2,6 @@
 base:
   '*':
     - /pillars/pillar-mysql
-# Instalacja serwera MySQL
-    - install_mysql_server:
-        pkg.installed:
-          - name: mysql-server
 # Uruchomienie usługi MySQL
     - start_mysql_service:
         service.running:

@@ -5,12 +5,6 @@
   vars_files:
   - /vaults/vault-ansible.yml
 
-  tasks:
-  - name: Instalacja serwera MySQL
-    apt:
-      name: mysql-server
-      state: present
-
   - name: Uruchomienie usługi MySQL
     service:
       name: mysql
